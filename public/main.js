@@ -6,7 +6,7 @@ const view = (state) => `
 <h1> tasks </h1>
 </header>
     <section>
-        <table style="grid-area:tasks;">
+        <table style="grid-area:tasks;height:25px;">
             <tr>
                 <th>task</th>
                 <th>status</th>
@@ -56,25 +56,43 @@ const update = {
             text: data.get('task'),
             status: "not yet done"
         }
-        state.tasks.push(task)
+        const postRequest ={
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(task)
+        }
+        fetch('/tasks',postRequest).then(()=>app.run('getTasks'))
         return state
     },
     delete: (state,form)=>{
         const data = new FormData(form)
         const id = data.get('id')
-        const index = state.tasks.findIndex(element => element.id ===id)
-        state.tasks.splice(index,1)
+        const task = state.tasks.find(task => task.id == id)
+        const postRequest = {
+            method: 'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify(task)
+        }
+        fetch('/tasks/delete',postRequest).then(()=>app.run('getTasks'))
         return state
     },
     doUndo: (state,form)=>{
         const data = new FormData(form)
         const id = data.get('id')
-        const index = state.tasks.findIndex(element => element.id ===id)
-        if (state.tasks[index].status ==="not yet done"){
-            state.tasks[index].status = 'done'
-        } else{
-            state.tasks[index].status ="not yet done"
+        const task = state.tasks.find(task => task.id == id)
+        const postRequest = {
+            method: 'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify(task)
         }
+        fetch('/tasks/changeStatus',postRequest).then(()=>app.run('getTasks'))
+
         return state
     },
     ondragstart: (state,event) =>{
@@ -85,23 +103,39 @@ const update = {
     onDrop: (state,event) =>{
         event.preventDefault()
         const id = event.dataTransfer.getData('text')
-        const index = state.tasks.findIndex(task => task.id ==id)
-        state.tasks.splice(index,1)
+        const task = state.tasks.find(task => task.id == id)
+        const postRequest = {
+            method: 'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify(task)
+        }
+        fetch('/tasks/delete',postRequest).then(()=>app.run('getTasks'))
         return state
     },
     onDropHighlight: (state,event) =>{
         event.preventDefault()
         event.stopPropagation()
         const id = event.dataTransfer.getData('text')
-        const index = state.tasks.findIndex(task => task.id ==id)
-         if(state.tasks[index].highlight){
-            state.tasks[index].highlight = null
-         }else{
-            state.tasks[index].highlight = 'highlight'
-         }
+        const task = state.tasks.find(task => task.id ===id)
+        const postRequest = {
+            method: 'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify(task)
+        }
+        fetch('/tasks/highlight',postRequest).then(()=>app.run('getTasks'))
+        return state
+
+    },
+    getTasks: async (state)=>{
+        state.tasks = await fetch('tasks').then(res=>res.json())
         return state
     }
 
 }
 
 app.start('app',state,view,update)
+app.run('getTasks')
