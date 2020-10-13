@@ -6,7 +6,7 @@ const view = (state) => `
 <h1> tasks </h1>
 </header>
     <section>
-        <table style="grid-area:tasks;height:25px;">
+        <table style="grid-area:tasks;">
             <tr>
                 <th>task</th>
                 <th>status</th>
